@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumière — Photo Studio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500&display=swap');
+
+  :root {
+    --cream: #f7f2ea;
+    --ink: #221d17;
+    --clay: #b4733e;
+    --clay-dark: #8f5a2e;
+    --line: #e2d8c8;
+    --olive: #6b6a4f;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 56px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .topbar .mark {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    font-weight: 500;
+  }
+
+  .topbar .tag {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--olive);
+  }
+
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 72px 32px 100px;
+  }
+
+  .intro {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+
+  .intro .eyebrow {
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 14px;
+  }
+
+  .intro h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 52px;
+    line-height: 1.08;
+    margin-bottom: 18px;
+  }
+
+  .intro h1 em {
+    font-style: italic;
+    font-weight: 500;
+    color: var(--clay);
+  }
+
+  .intro p {
+    color: #6b6356;
+    font-size: 17px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .studio {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+
+  @media (max-width: 760px) {
+    .studio { grid-template-columns: 1fr; }
+    .intro h1 { font-size: 38px; }
+    .topbar { padding: 20px 24px; }
+  }
+
+  .panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-label {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--olive);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .panel-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    min-height: 360px;
+  }
+
+  .dropzone {
+    width: 100%;
+    height: 100%;
+    min-height: 312px;
+    border: 1.5px dashed var(--line);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .dropzone:hover, .dropzone.drag {
+    border-color: var(--clay);
+    background: #fdf9f3;
+  }
+
+  .dropzone svg {
+    width: 38px;
+    height: 38px;
+    stroke: var(--clay);
+  }
+
+  .dropzone .dz-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+  }
+
+  .dropzone .dz-sub {
+    font-size: 13px;
+    color: #9a9082;
+  }
+
+  .dropzone input { display: none; }
+
+  .preview-img {
+    width: 100%;
+    height: 100%;
+    min-height: 312px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .result-empty {
+    text-align: center;
+    color: #b2a896;
+  }
+
+  .result-empty svg {
+    width: 34px;
+    height: 34px;
+    stroke: #cfc4b1;
+    margin-bottom: 12px;
+  }
+
+  .result-empty p {
+    font-size: 14px;
+  }
+
+  .loader {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .loader.active { display: flex; }
+
+  .loader-ring {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--line);
+    border-top-color: var(--clay);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader p {
+    font-size: 13px;
+    color: var(--olive);
+    letter-spacing: 0.5px;
+  }
+
+  .controls {
+    margin-top: 36px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 28px 32px;
+  }
+
+  .controls-label {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--olive);
+    margin-bottom: 16px;
+  }
+
+  .controls textarea {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 14px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    resize: none;
+    height: 64px;
+    background: var(--cream);
+  }
+
+  .controls textarea:focus {
+    outline: none;
+    border-color: var(--clay);
+  }
+
+  .presets {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .preset {
+    border: 1px solid var(--line);
+    background: transparent;
+    border-radius: 20px;
+    padding: 7px 16px;
+    font-size: 13px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .preset:hover, .preset.active {
+    border-color: var(--clay);
+    background: #fdf2e8;
+    color: var(--clay-dark);
+  }
+
+  .action-row {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .note {
+    font-size: 13px;
+    color: #9a9082;
+  }
+
+  .generate-btn {
+    background: var(--clay);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 14px 32px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .generate-btn:hover { background: var(--clay-dark); }
+
+  .generate-btn:disabled {
+    background: #d9cfbf;
+    cursor: not-allowed;
+  }
+
+  .download-btn {
+    display: none;
+    margin-top: 14px;
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--clay);
+    color: var(--clay-dark);
+    padding: 11px;
+    border-radius: 4px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .download-btn.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="mark">LUMIÈRE</div>
+  <div class="tag">Photo Studio</div>
+</div>
+
+<main>
+  <div class="intro">
+    <div class="eyebrow">Инструмент для продавцов</div>
+    <h1>Превратите снимок<br>в <em>витринное</em> фото</h1>
+    <p>Загрузите фотографию украшения — фон станет чище и наряднее, а само изделие останется нетронутым.</p>
+  </div>
+
+  <div class="studio">
+    <div class="panel">
+      <div class="panel-label">
+        <span>Исходное фото</span>
+        <span id="fileLabel">—</span>
+      </div>
+      <div class="panel-body" id="uploadBody">
+        <div class="dropzone" id="dropzone">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div class="dz-title">Перетащите фото сюда</div>
+          <div class="dz-sub">или нажмите, чтобы выбрать файл — JPG, PNG до 10 МБ</div>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">
+        <span>Результат</span>
+        <span id="statusLabel">ожидание</span>
+      </div>
+      <div class="panel-body" id="resultBody">
+        <div class="result-empty" id="resultEmpty">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <p>Готовое фото появится здесь</p>
+        </div>
+        <div class="loader" id="loader">
+          <div class="loader-ring"></div>
+          <p>Обрабатываем фон…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="controls-label">Каким должен быть новый фон</div>
+    <textarea id="promptInput" placeholder="Например: мягкий бежевый фон с лёгкой тенью, студийный свет"></textarea>
+    <div class="presets">
+      <button class="preset" data-text="Чистый белый фон, мягкая тень, студийный свет">Студийный белый</button>
+      <button class="preset" data-text="Тёплый бежевый фон, естественный мягкий свет">Тёплый бежевый</button>
+      <button class="preset" data-text="Мраморная поверхность, дневной свет сбоку">Мрамор</button>
+      <button class="preset" data-text="Тёмный матовый фон, контрастный акцентный свет">Тёмный контраст</button>
+    </div>
+
+    <div class="action-row">
+      <span class="note">Изделие не изменится — меняется только окружение</span>
+      <button class="generate-btn" id="generateBtn" disabled>Улучшить фон</button>
+    </div>
+
+    <a class="download-btn" id="downloadBtn">Скачать результат</a>
+  </div>
+</main>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+  const fileInput = document.getElementById('fileInput');
+  const uploadBody = document.getElementById('uploadBody');
+  const fileLabel = document.getElementById('fileLabel');
+  const statusLabel = document.getElementById('statusLabel');
+  const resultEmpty = document.getElementById('resultEmpty');
+  const resultBody = document.getElementById('resultBody');
+  const loader = document.getElementById('loader');
+  const generateBtn = document.getElementById('generateBtn');
+  const downloadBtn = document.getElementById('downloadBtn');
+  const promptInput = document.getElementById('promptInput');
+  const presets = document.querySelectorAll('.preset');
+
+  let uploadedFile = null;
+
+  presets.forEach(btn => {
+    btn.addEventListener('click', () => {
+      presets.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      promptInput.value = btn.dataset.text;
+    });
+  });
+
+  dropzone.addEventListener('click', () => fileInput.click());
+
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('drag');
+  });
+
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag'));
+
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag');
+    if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+  });
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
+  });
+
+  function handleFile(file) {
+    uploadedFile = file;
+    fileLabel.textContent = file.name;
+    generateBtn.disabled = false;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadBody.innerHTML = `<img class="preview-img" src="${e.target.result}" alt="Загруженное фото">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  generateBtn.addEventListener('click', () => {
+    if (!uploadedFile) return;
+
+    resultEmpty.style.display = 'none';
+    loader.classList.add('active');
+    statusLabel.textContent = 'обработка…';
+    generateBtn.disabled = true;
+    downloadBtn.classList.remove('active');
+
+    // Здесь будет настоящий вызов к серверу, который обращается к ИИ (Photoroom / OpenAI)
+    // Сейчас — заглушка, чтобы показать как выглядит интерфейс в работе
+    setTimeout(() => {
+      loader.classList.remove('active');
+      statusLabel.textContent = 'готово';
+      generateBtn.disabled = false;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resultBody.innerHTML = `<img class="preview-img" src="${e.target.result}" alt="Результат">`;
+        downloadBtn.href = e.target.result;
+        downloadBtn.download = 'lumiere-result.jpg';
+        downloadBtn.classList.add('active');
+      };
+      reader.readAsDataURL(uploadedFile);
+    }, 1800);
+  });
+</script>
+
+</body>
+</html>
