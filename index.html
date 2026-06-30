@@ -466,24 +466,53 @@
     generateBtn.disabled = true;
     downloadBtn.classList.remove('active');
 
-    // Здесь будет настоящий вызов к серверу, который обращается к ИИ (Photoroom / OpenAI)
-    // Сейчас — заглушка, чтобы показать как выглядит интерфейс в работе
-    setTimeout(() => {
-      loader.classList.remove('active');
-      statusLabel.textContent = 'готово';
-      generateBtn.disabled = false;
+    // Настоящий вызов к серверу, который безопасно обращается к OpenAI
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const imageBase64 = e.target.result;
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resultBody.innerHTML = `<img class="preview-img" src="${e.target.result}" alt="Результат">`;
-        downloadBtn.href = e.target.result;
-        downloadBtn.download = 'lumiere-result.jpg';
+      try {
+        const response = await fetch('/api/process-photo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: imageBase64,
+            prompt: promptInput.value
+          })
+        });
+
+        const data = await response.json();
+
+        loader.classList.remove('active');
+        generateBtn.disabled = false;
+
+        if (!response.ok) {
+          statusLabel.textContent = 'ошибка';
+          resultEmpty.style.display = 'flex';
+          resultEmpty.querySelector('p').textContent = data.error || 'Что-то пошло не так';
+          return;
+        }
+
+        statusLabel.textContent = 'готово';
+        resultBody.innerHTML = `<img class="preview-img" src="${data.image}" alt="Результат">`;
+        downloadBtn.href = data.image;
+        downloadBtn.download = 'lumiere-result.png';
         downloadBtn.classList.add('active');
-      };
-      reader.readAsDataURL(uploadedFile);
-    }, 1800);
+
+      } catch (err) {
+        loader.classList.remove('active');
+        generateBtn.disabled = false;
+        statusLabel.textContent = 'ошибка';
+        resultEmpty.style.display = 'flex';
+        resultEmpty.querySelector('p').textContent = 'Не удалось связаться с сервером';
+      }
+    };
+    reader.readAsDataURL(uploadedFile);
   });
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
