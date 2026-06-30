@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
     // Формируем запрос к Photoroom API
     const formData = new FormData();
-    formData.append('imageFile', new Blob([imageBuffer], { type: mimeType }), 'photo.jpg');
+    formData.append('image_file', new Blob([imageBuffer], { type: mimeType }), 'photo.jpg');
     formData.append('outputType', 'rgba'); // прозрачный фон
 
     // Если пользователь выбрал пресет — добавляем фон
