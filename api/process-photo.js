@@ -23,11 +23,15 @@ export default async function handler(req, res) {
       `та же форма, цвет металла, отражения на самом изделии, положение в кадре. ` +
       `Не сохраняй исходный фон ни в каком виде — это главная задача редактирования.`;
 
+    // Определяем настоящий тип картинки из base64-строки (data:image/png;base64,... или data:image/jpeg;...)
+    const mimeMatch = imageBase64.match(/^data:(image\/\w+);base64,/);
+    const mimeType = mimeMatch ? mimeMatch[1] : 'image/png';
+
     // Превращаем base64 в файл-картинку, который ожидает OpenAI
     const imageBuffer = Buffer.from(imageBase64.split(',')[1], 'base64');
 
     const formData = new FormData();
-    formData.append('image', new Blob([imageBuffer]), 'photo.png');
+    formData.append('image', new Blob([imageBuffer], { type: mimeType }), 'photo.png');
     formData.append('prompt', finalPrompt);
     formData.append('model', 'gpt-image-1');
     formData.append('size', '1024x1024');
