@@ -450,9 +450,36 @@
     fileLabel.textContent = file.name;
     generateBtn.disabled = false;
 
+    // сброс старого результата
+    downloadBtn.classList.remove('active');
+    statusLabel.textContent = 'ожидание';
+    resultBody.innerHTML = `
+      <div class="result-empty" id="resultEmpty">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M9 12l2 2 4-4"/>
+        </svg>
+        <p>Готовое фото появится здесь</p>
+      </div>
+      <div class="loader" id="loader">
+        <div class="loader-ring"></div>
+        <p>Обрабатываем фон…</p>
+      </div>
+    `;
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      uploadBody.innerHTML = `<img class="preview-img" src="${e.target.result}" alt="Загруженное фото">`;
+      uploadBody.innerHTML = `
+        <div style="position: relative; width: 100%; height: 100%;">
+          <img class="preview-img" src="${e.target.result}" alt="Загруженное фото">
+          <button id="changeFileBtn" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.92); border: 1px solid var(--line); border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; font-family: 'Inter', sans-serif;">Заменить фото</button>
+        </div>
+      `;
+      document.getElementById('changeFileBtn').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        fileInput.value = '';
+        fileInput.click();
+      });
     };
     reader.readAsDataURL(file);
   }
@@ -460,8 +487,10 @@
   generateBtn.addEventListener('click', () => {
     if (!uploadedFile) return;
 
-    resultEmpty.style.display = 'none';
-    loader.classList.add('active');
+    const currentEmpty = document.getElementById('resultEmpty');
+    const currentLoader = document.getElementById('loader');
+    if (currentEmpty) currentEmpty.style.display = 'none';
+    if (currentLoader) currentLoader.classList.add('active');
     statusLabel.textContent = 'обработка…';
     generateBtn.disabled = true;
     downloadBtn.classList.remove('active');
@@ -483,13 +512,17 @@
 
         const data = await response.json();
 
-        loader.classList.remove('active');
+        const activeLoader = document.getElementById('loader');
+        if (activeLoader) activeLoader.classList.remove('active');
         generateBtn.disabled = false;
 
         if (!response.ok) {
           statusLabel.textContent = 'ошибка';
-          resultEmpty.style.display = 'flex';
-          resultEmpty.querySelector('p').textContent = data.error || 'Что-то пошло не так';
+          const emptyBlock = document.getElementById('resultEmpty');
+          if (emptyBlock) {
+            emptyBlock.style.display = 'flex';
+            emptyBlock.querySelector('p').textContent = data.error || 'Что-то пошло не так';
+          }
           return;
         }
 
@@ -500,19 +533,20 @@
         downloadBtn.classList.add('active');
 
       } catch (err) {
-        loader.classList.remove('active');
+        const activeLoader = document.getElementById('loader');
+        if (activeLoader) activeLoader.classList.remove('active');
         generateBtn.disabled = false;
         statusLabel.textContent = 'ошибка';
-        resultEmpty.style.display = 'flex';
-        resultEmpty.querySelector('p').textContent = 'Не удалось связаться с сервером';
+        const emptyBlock = document.getElementById('resultEmpty');
+        if (emptyBlock) {
+          emptyBlock.style.display = 'flex';
+          emptyBlock.querySelector('p').textContent = 'Не удалось связаться с сервером';
+        }
       }
     };
     reader.readAsDataURL(uploadedFile);
   });
 </script>
-
-</body>
-</html>
 
 </body>
 </html>
